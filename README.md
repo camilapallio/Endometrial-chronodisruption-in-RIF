@@ -1,2 +1,5 @@
-# Endometrial-chronodisruption-in-RIF
+# Endometrial chronodisruption in RIF
+Recurrent implantation failure represents a critical challenge in reproductive medicine. This study is characterized by the transcriptomics alterations on endometrial circadian cycle in the window of implantation by systems biology. Differential expression analysis with limma (RStudio) was used with the principal cohort GSE111974, which showed 24 differential expression genes. GSEA analysis revealed a coordinate suppression of metabolic, bioenergetics and dream-wake cycle ways. Weighted genes co-expression networks analysis and cross validation with independent cohort GSE92324 prioritizing how to deregulate central hubs to PPARGC1A. The results showed that RIF doesn’t exhibit a central clock structural loss, although a peripheric circadian desynchronization and an endometrial adaptative mitochondrial bioenergetic failure.
+
+General objetivo of this TMF:
 To characterize transcriptomic alterations in the molecular circadian clock in endometrial tissue from patients with recurrent implantation failure by integrating bioinformatic workflows for differential expression and biological network analysis, with the aim of identifying potential biomarkers of biological desynchronization during the WOI
