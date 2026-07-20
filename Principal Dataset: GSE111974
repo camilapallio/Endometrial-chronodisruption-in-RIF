@@ -1,1 +1,108 @@
+library(GEOquery)
+library(limma)
+library(affy)
+library(oligo)
+library(arrayQualityMetrics)
+library(pheatmap)
+library(ggplot2)
+library(tidyverse)
 
+gse <- getGEO("GSE111974", GSEMatrix = TRUE)
+gse
+exprSet <- gse[[1]]
+exp_matrix<- exprs(exprSet)
+dim(exp_matrix)
+#genes 50599 / muestras 48
+
+pheno <- pData(exprSet)
+group <- ifelse(grepl("RIF", pheno$title), "RIF", "Control")
+group<- factor(group)
+table(group)
+pheno$group <- group
+
+#CONTROL DE CALIDAD
+sum(is.na(exp_matrix))
+
+annot <- read.delim("C:/Users/camil/OneDrive/Escritorio/Bioinformatica/TMF/GPL17077-17467.txt",
+comment.char = "#",
+stringsAsFactors = FALSE)
+colnames(annot)
+head(annot)
+
+library(Biobase)
+colnames(fData(exprSet))
+head(fData(exprSet))
+gene_symbols <- fData(exprSet)$GENE_SYMBOL
+rownames(exp_matrix)<- gene_symbols
+exp_matrix<- exp_matrix[rownames(exp_matrix)!="",]
+exp_matrix<- exp_matrix[!duplicated(rownames(exp_matrix)),]
+
+group_color <- ifelse(pheno$group == "RIF", "orange", "navy")
+
+#Boxplot de distribucion
+boxplot(exp_matrix,
+outline = FALSE,
+lars = 2,
+col= group_color,
+xaxt = "n",
+ylab = "Intensidad (log2)",
+main= "Distribución de expresión por muestra")
+
+#Density plot
+plotDensities(exp_matrix[, group== "Control"],
+col = group_color,
+lwd = 1.5,
+legend = FALSE,
+main = "Density plot expresión",
+xlab = "Intensidad (log2)",
+ylab = "Densidad")
+legend("topright",
+legend=c("Control","RIF"),
+col=c("navy","orange"),
+lwd=2,
+cex=0.8,
+bg="white",
+box.lwd = 0)
+
+#Principal Components Analysis
+pca <- prcomp(t(exp_matrix), scale. = TRUE)
+var_explained <- (pca$sdev^2) / sum(pca$sdev^2)
+percent_var <- round(var_explained * 100, 1)
+plot(pca$x[,1], pca$x[,2],
+col=group_color,
+pch =19,
+xlab=paste0("PC1 (", percent_var[1], "%)"),
+ylab= paste0("PC2 (", percent_var[2], "%)"),
+main="PCA muestras")
+
+#Heatmap
+sample_cor <- cor(exp_matrix)
+annotation_col <- data.frame(Grupo = group)
+rownames(annotation_col) <-colnames(sample_cor)
+annotation_colors<- list(Grupo=c(Control="navy", RIF="orange"))
+pheatmap(sample_cor,
+annotation_col = annotation_col,
+annotation_colors = annotation_colors,
+color= colorRampPalette(c("white","red"))(50),
+show_rownames = FALSE,
+show_colnames = FALSE,
+main = "Correlación entre muestras")
+
+#Clustering de muestras
+sampleTree <- hclust(dist(t(exp_matrix)))
+plot(sampleTree,
+main="Clustering de muestras",
+xlab="",
+ylab="")
+plotDendroAndColors(sampleTree,
+group_color,
+groupLabels="Group",
+main="Clustering de muestras")
+
+#Layout de graficos
+layout(matrix(c(1,2,
+3,4,
+5,5),
+nrow = 3,
+byrow = TRUE))
+par(mar=c(4,4,3,1))
